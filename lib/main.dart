@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(MyApp());
 
@@ -14,6 +17,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: MyHomePage(title: 'Flutter Demo Home Page'),
+      routes: <String, WidgetBuilder> {
+        SecondRoute.routeName: (context) => new SecondRoute()
+    },
     );
   }
 }
@@ -40,9 +46,16 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+
+  String testString;
+  @override
+  void initState() {
+    getNamePreferences();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -55,45 +68,167 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text('Example Home Page'),
       ),
-      body: Center(
+      body: SingleChildScrollView(
+        child: new Center(
 
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: RaisedButton(
-          child: Text('Open Route'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => SecondRoute()),
-            );
-          },
+          // Center is a layout widget. It takes a single child and positions it
+          // in the middle of the parent.
 
 
+          child: Container (
+              child: Column(
+                children: <Widget>[
+                  Image.asset(
+                      'images/download (14).jpg'
+                  ),
+                  Text(
+                      'This image represents Monarchist Germany under the Hohenzollern Dynasty'
+                  ),
+                  RaisedButton(
+                    child: Text('Open Route'),
+                    onPressed: () {
+                      saveName (
 
-      ),
- // This trailing comma makes auto-formatting nicer for build methods.
-    ),
+                      );
+
+                    },
+                  ),
+                  TextField(
+                      controller: returnTest(),
+                      keyboardType:  TextInputType.multiline,
+                      onChanged:(String value){
+                        testString = value;
+                      },
+
+
+                      maxLines: 10,
+                      decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Please write something because I am lonely....'
+                      ),
+
+                  ),
+
+                ],
+              )
+          ),
+
+          // This trailing comma makes auto-formatting nicer for build methods.
+        ),
+      )
     );
+  }
+
+  returnTest(){
+    if(testString != null){
+      return TextEditingController(text: "$testString");
+    } else if(testString == null){
+      return TextEditingController(text: null);
+    }
+  }
+
+  void saveName() {
+    String name = testString;
+    saveNamePreference(name).then((bool committed) {
+      Navigator.of(context).pushNamed(SecondRoute.routeName);
+    });
+  }
+
+  Future<String> getNamePreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String name = prefs.getString("name");
+    testString = name;
+    return name;
   }
 }
 
-class SecondRoute extends StatelessWidget {
+Future<bool> saveNamePreference(String name) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setString("name", name);
+
+  return prefs.commit();
+}
+
+Future<String> getNamePreference() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String name = prefs.getString("name");
+
+
+
+  return name;
+}
+
+class SecondRoute extends StatefulWidget {
+  static String routeName = "/nextPage";
+
+  @override
+  _SecondRouteState createState() => _SecondRouteState();
+}
+
+class _SecondRouteState extends State<SecondRoute> {
+  String _name = "";
+
+  @override
+  void initState() {
+  getNamePreference().then(updateName);
+super.initState();
+}
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Example Second Page"),
-      ),
-      body: Center(
-        child: RaisedButton(
-          onPressed: () {
-            Navigator.pop(context);
-
-          },
-          child: Text('Go back!'),
+        appBar: AppBar(
+          // Here we take the value from the MyHomePage object that was created by
+          // the App.build method, and use it to set our appbar title.
+          title: Text('Example Second Page'),
         ),
-        ),
-      );
+        body: SingleChildScrollView(
+          child: new Center(
 
+            // Center is a layout widget. It takes a single child and positions it
+            // in the middle of the parent.
+
+
+            child: Container (
+                child: Column(
+                  children: <Widget>[
+                    Image.asset(
+                        'images/download (14).jpg'
+                    ),
+                    Text(
+                        _name
+                    ),
+                    RaisedButton(
+                      child: Text('Frick, go back'),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                    TextField(
+                      keyboardType:  TextInputType.multiline,
+                      maxLines: 10,
+                      decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Please write something because I am lonely....'
+                      ),
+
+                    ),
+
+                  ],
+                )
+            ),
+
+            // This trailing comma makes auto-formatting nicer for build methods.
+          ),
+        )
+    );
+
+  }
+
+  void updateName(String name) {
+    setState(() {
+      this._name = name;
+    });
   }
 }
