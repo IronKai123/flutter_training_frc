@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(MyApp());
 
@@ -14,6 +17,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: MyHomePage(title: 'Flutter Demo Home Page'),
+      routes: <String, WidgetBuilder> {
+        SecondRoute.routeName: (context) => new SecondRoute()
+    },
     );
   }
 }
@@ -40,16 +46,16 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
 
+
+  String testString;
+  @override
+  void initState() {
+    getNamePreferences();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('graphics/background.png')
-        )
-      ),
-    );
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -60,39 +66,169 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text('Example Home Page'),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'This is an example of text',
-            ),
-            Text (
-              'This is example of text being under text in a column'
+      body: SingleChildScrollView(
+        child: new Center(
+
+          // Center is a layout widget. It takes a single child and positions it
+          // in the middle of the parent.
+
+
+          child: Container (
+              child: Column(
+                children: <Widget>[
+                  Image.asset(
+                      'images/download (14).jpg'
+                  ),
+                  Text(
+                      'This image represents Monarchist Germany under the Hohenzollern Dynasty'
+                  ),
+                  RaisedButton(
+                    child: Text('Open Route'),
+                    onPressed: () {
+                      saveName (
+
+                      );
+
+                    },
+                  ),
+                  TextField(
+                      controller: returnTest(),
+                      keyboardType:  TextInputType.multiline,
+                      onChanged:(String value){
+                        testString = value;
+                      },
+
+
+                      maxLines: 10,
+                      decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Please write something because I am lonely....'
+                      ),
+
+                  ),
+
+                ],
+              )
+          ),
+
+          // This trailing comma makes auto-formatting nicer for build methods.
+        ),
+      )
+    );
+  }
+
+  returnTest(){
+    if(testString != null){
+      return TextEditingController(text: "$testString");
+    } else if(testString == null){
+      return TextEditingController(text: null);
+    }
+  }
+
+  void saveName() {
+    String name = testString;
+    saveNamePreference(name).then((bool committed) {
+      Navigator.of(context).pushNamed(SecondRoute.routeName);
+    });
+  }
+
+  Future<String> getNamePreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String name = prefs.getString("name");
+    testString = name;
+    return name;
+  }
+}
+
+Future<bool> saveNamePreference(String name) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setString("name", name);
+
+  return prefs.commit();
+}
+
+Future<String> getNamePreference() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String name = prefs.getString("name");
+
+
+
+  return name;
+}
+
+class SecondRoute extends StatefulWidget {
+  static String routeName = "/nextPage";
+
+  @override
+  _SecondRouteState createState() => _SecondRouteState();
+}
+
+class _SecondRouteState extends State<SecondRoute> {
+  String _name = "";
+
+  @override
+  void initState() {
+  getNamePreference().then(updateName);
+super.initState();
+}
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Scaffold(
+        appBar: AppBar(
+          // Here we take the value from the MyHomePage object that was created by
+          // the App.build method, and use it to set our appbar title.
+          title: Text('Example Second Page'),
+        ),
+        body: SingleChildScrollView(
+          child: new Center(
+
+            // Center is a layout widget. It takes a single child and positions it
+            // in the middle of the parent.
+
+
+            child: Container (
+                child: Column(
+                  children: <Widget>[
+                    Image.asset(
+                        'images/download (14).jpg'
+                    ),
+                    Text(
+                        _name
+                    ),
+                    RaisedButton(
+                      child: Text('Frick, go back'),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                    TextField(
+                      keyboardType:  TextInputType.multiline,
+                      maxLines: 10,
+                      decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Please write something because I am lonely....'
+                      ),
+
+                    ),
+
+                  ],
+                )
             ),
 
-          ],
-        ),
-      ),
- // This trailing comma makes auto-formatting nicer for build methods.
+            // This trailing comma makes auto-formatting nicer for build methods.
+          ),
+        )
     );
+
+  }
+
+  void updateName(String name) {
+    setState(() {
+      this._name = name;
+    });
   }
 }
