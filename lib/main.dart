@@ -53,29 +53,47 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text('Example Home Page'),
       ),
       body: Center(
 
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: Column(
+        child: RaisedButton(
+          child: Text('Open Route'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SecondRoute()),
+            );
+          },
 
 
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              keyboardType: TextInputType.multiline,
-              maxLines: 10,
-              decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: 'Please enter a search term'
-              ),
-            ),
-          ],
-        ),
+
       ),
  // This trailing comma makes auto-formatting nicer for build methods.
+    ),
     );
+  }
+}
+
+class SecondRoute extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Example Second Page"),
+      ),
+      body: Center(
+        child: RaisedButton(
+          onPressed: () {
+            Navigator.pop(context);
+
+          },
+          child: Text('Go back!'),
+        ),
+        ),
+      );
+
   }
 }
